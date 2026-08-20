@@ -21,7 +21,11 @@ Perch does not transcribe, synthesize, or download from Hugging Face. It is not 
 
 ## Install
 
-Needs [Xcode](https://developer.apple.com/xcode/) 16+ and [XcodeGen](https://github.com/yonaskolb/XcodeGen).
+**[Download Perch-1.0.0.dmg](https://github.com/menufactory43/perch/releases/latest)** (signed & notarized, Intel + Apple Silicon).
+
+Open the disk image, drag **Perch** onto **Applications**, launch it from there. It lives in the menu bar (cylinder icon), not the Dock.
+
+To build from source you need [Xcode](https://developer.apple.com/xcode/) 16+ and [XcodeGen](https://github.com/yonaskolb/XcodeGen):
 
 ```bash
 git clone https://github.com/menufactory43/perch.git
@@ -32,9 +36,7 @@ xcodebuild -project Perch.xcodeproj -scheme Perch -configuration Debug \
   -destination 'platform=macOS,arch=arm64' build
 ```
 
-Then copy `DerivedData/Build/Products/Debug/Perch.app` (or Xcode’s Products) to `/Applications` and open it.
-
-There is no notarized DMG yet. Gatekeeper may ask you to allow a local build.
+Maintainers: `NOTARY_PROFILE=souffleuse ./scripts/make-dmg.sh` produces a notarized `dist/Perch-<version>.dmg`.
 
 ## First launch
 
