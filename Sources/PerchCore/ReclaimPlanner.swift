@@ -34,7 +34,11 @@ public struct ReclaimPlanner: @unchecked Sendable {
             }
 
             let duplicates = nonStore.filter { $0.url.standardizedFileURL.path != canonical.url.standardizedFileURL.path }
+            let reference = store.contains(fingerprint) ? store.url(for: fingerprint) : canonical.url
             for placement in duplicates {
+                if BlockSharing.sharesStorage(reference, placement.url, fileManager: fileManager) {
+                    continue
+                }
                 replacements.append(
                     PlannedReplacement(
                         fingerprint: fingerprint,
@@ -63,9 +67,11 @@ public struct ReclaimPlanner: @unchecked Sendable {
         guard !bins.isEmpty else { return [] }
 
         var fingerprintsInBin: [String: Set<String>] = [:]
+        var kindsInBin: [String: Set<ModelKind>] = [:]
         for placement in report.placements where placement.source != .store {
             let parent = placement.url.deletingLastPathComponent().standardizedFileURL.path
             fingerprintsInBin[parent, default: []].insert(placement.fingerprint.rawValue)
+            kindsInBin[parent, default: []].insert(placement.kind)
         }
 
         var pushes: [PlannedPush] = []
@@ -80,6 +86,13 @@ public struct ReclaimPlanner: @unchecked Sendable {
             for bin in bins {
                 let binPath = bin.standardizedFileURL.path
                 if fingerprintsInBin[binPath, default: []].contains(fingerprint.rawValue) {
+                    continue
+                }
+                let kinds = kindsInBin[binPath, default: []]
+                if kinds.isEmpty {
+                    let sourceFolder = canonical.url.deletingLastPathComponent().lastPathComponent
+                    guard bin.lastPathComponent == sourceFolder else { continue }
+                } else if !kinds.contains(canonical.kind) {
                     continue
                 }
                 let destination = bin.appending(path: fileName)
@@ -129,6 +142,9 @@ public struct ReclaimPlanner: @unchecked Sendable {
         let path = url.path
         if path.hasPrefix(store.paths.packagesRoot.path) { return false }
         if path.contains("huggingface") { return false }
-        return true
+        // Cross-app GGUF copies (Cotypist → Souffleuse → KeyType) look like
+        // "fill" and explode logical size. Only FluidAudio folders are safe:
+        // Dictus / FluidVoice already expect the same Parakeet tree.
+        return path.contains("FluidAudio")
     }
 }

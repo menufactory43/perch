@@ -23,3 +23,5 @@ swift test
 - Tests go through `PerchSession` / planner / cloner, not through the menu bar.
 
 Do not add an inference server without an ADR.
+
+Do not widen **push** beyond FluidAudio folders without an ADR. Reclaim of identical GGUF copies across apps is fine; copying a model into an app that never asked for it is not.

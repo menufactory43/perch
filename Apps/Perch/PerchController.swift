@@ -15,6 +15,8 @@ final class PerchController {
     var plan: ReclaimPlan?
     var lastResult: ReclaimResult?
     var showReclaimConfirmation = false
+    var pendingDelete: PackageGroup?
+    var isDeleting = false
 
     var watchEnabled: Bool {
         didSet {
@@ -85,6 +87,8 @@ final class PerchController {
     }
 
     var reclaimableBytes: Int64 { plan?.reclaimableBytes ?? 0 }
+    var totalBytes: Int64 { report?.totalLogicalBytes ?? 0 }
+    var uniqueCount: Int { report?.uniquePackageCount ?? 0 }
     var pushCount: Int { plan?.pushes.count ?? 0 }
     var canReclaim: Bool { (plan?.isEmpty == false) && !isReclaiming && !isScanning }
 
@@ -101,10 +105,21 @@ final class PerchController {
     }
 
     func openFullDiskAccessSettings() {
-        if let url = FullDiskAccess.settingsURL {
-            NSWorkspace.shared.open(url)
-        }
+        revealAppInFinder()
+        openFullDiskAccessPane()
         refreshAccess()
+    }
+
+    func revealAppInFinder() {
+        let preferred = URL(fileURLWithPath: "/Applications/Perch.app")
+        let url = FileManager.default.fileExists(atPath: preferred.path) ? preferred : Bundle.main.bundleURL
+        NSWorkspace.shared.activateFileViewerSelecting([url])
+    }
+
+    private func openFullDiskAccessPane() {
+        for url in FullDiskAccess.paneURLs {
+            if NSWorkspace.shared.open(url) { return }
+        }
     }
 
     func scan() {
@@ -123,8 +138,66 @@ final class PerchController {
     func confirmReclaim() {
         showReclaimConfirmation = false
         guard let plan, !isReclaiming else { return }
-        watchEnabled = true
         execute(plan)
+    }
+
+    func requestDelete(_ group: PackageGroup) {
+        pendingDelete = group
+        showReclaimConfirmation = false
+    }
+
+    func cancelDelete() {
+        pendingDelete = nil
+    }
+
+    func confirmDelete() {
+        guard let group = pendingDelete, let report, !isDeleting, !isReclaiming else { return }
+        pendingDelete = nil
+        isDeleting = true
+        lastError = nil
+        statusMessage = String(localized: "Deleting…")
+        let fingerprint = group.fingerprint
+        let snapshot = report
+        var current = report
+        current.placements.removeAll { $0.fingerprint == fingerprint }
+        self.report = current
+        if let session {
+            plan = session.plan(from: current)
+        }
+        Task {
+            do {
+                let session = try currentSession()
+                let removal = try await Task.detached(priority: .userInitiated) {
+                    let plan = session.removalPlan(for: fingerprint, report: snapshot)
+                    try session.remove(plan)
+                    return plan
+                }.value
+                if removal.roots.isEmpty {
+                    lastError = String(localized: "Nothing was deleted. The path is outside Perch’s allowed folders.")
+                }
+            } catch {
+                lastError = error.localizedDescription
+            }
+            isDeleting = false
+            statusMessage = nil
+            runScan(autoApply: false)
+        }
+    }
+
+    func openPerchSettings() {
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+        let settings = Selector(("showSettingsWindow:"))
+        let preferences = Selector(("showPreferencesWindow:"))
+        if NSApp.responds(to: settings) {
+            NSApp.sendAction(settings, to: nil, from: nil)
+        } else {
+            NSApp.sendAction(preferences, to: nil, from: nil)
+        }
+    }
+
+    func resignToMenuBar() {
+        NSApp.setActivationPolicy(.accessory)
     }
 
     func revealStore() {
@@ -140,7 +213,7 @@ final class PerchController {
     }
 
     private func runScan(autoApply: Bool) {
-        guard !isScanning, !isReclaiming else { return }
+        guard !isScanning, !isReclaiming, !isDeleting else { return }
         refreshAccess()
         isScanning = true
         lastError = nil
@@ -160,8 +233,16 @@ final class PerchController {
                 self.report = report
                 self.plan = plan
                 updateFolderWatch()
-                if autoApply, watchEnabled, !plan.isEmpty {
-                    execute(plan)
+                if autoApply, watchEnabled {
+                    let reclaimOnly = ReclaimPlan(
+                        ingests: plan.ingests,
+                        replacements: plan.replacements,
+                        pushes: [],
+                        reclaimableBytes: plan.reclaimableBytes
+                    )
+                    if !reclaimOnly.isEmpty {
+                        execute(reclaimOnly)
+                    }
                 }
             } catch {
                 lastError = error.localizedDescription

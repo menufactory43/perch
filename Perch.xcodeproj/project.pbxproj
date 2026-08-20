@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		014754D8954EAF538562B94A /* ModelTotals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44EA0F30DFCBB10581D96FCF /* ModelTotals.swift */; };
 		069D199BF3C41C3F828CE0C7 /* HeaderBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3803B2089780A9165D968A34 /* HeaderBar.swift */; };
 		09280FEF45FFCE81B1D73690 /* PerchController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E81637963B057B3DACEC00E /* PerchController.swift */; };
 		0CA968CE18F2532DBDD9E1D5 /* PermissionPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60A955E7FABFC9446F1777AE /* PermissionPane.swift */; };
@@ -16,6 +17,7 @@
 		4BDE3291D24636C106C5BD24 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 206C2EE49E6928FD48BBA0F5 /* Assets.xcassets */; };
 		5BDB2838D3D263663EE802E3 /* PackageGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B490B6EBAA011C224A8E1C3 /* PackageGroup.swift */; };
 		7565CDB13383FA80D738CDEA /* FooterBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A642AB4634128434F1D188E0 /* FooterBar.swift */; };
+		79F284398D00DFB65B955449 /* DeleteConfirm.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29234E4B73EF536CBDD45CC2 /* DeleteConfirm.swift */; };
 		96EBC61C13AA4E5A36BB3EDB /* StatusHero.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AF74CC4132D5B1AB6301918 /* StatusHero.swift */; };
 		A05090E84B7CD15E07DBDE0B /* PerchCore in Frameworks */ = {isa = PBXBuildFile; productRef = 530281086F0BEE1A4DCA5303 /* PerchCore */; };
 		CF7470F895FCE28D11B21A51 /* PackageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60091EF2E23D3FADA830362B /* PackageList.swift */; };
@@ -30,9 +32,11 @@
 		134130493850CFD61387A79F /* PopoverRoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverRoot.swift; sourceTree = "<group>"; };
 		1E4EDB89D6EE3BEF29BDA9A7 /* PerchMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerchMetrics.swift; sourceTree = "<group>"; };
 		206C2EE49E6928FD48BBA0F5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		29234E4B73EF536CBDD45CC2 /* DeleteConfirm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteConfirm.swift; sourceTree = "<group>"; };
 		2D536AFFE3953ABAB0B417E5 /* LaunchAtLogin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLogin.swift; sourceTree = "<group>"; };
 		2E81637963B057B3DACEC00E /* PerchController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerchController.swift; sourceTree = "<group>"; };
 		3803B2089780A9165D968A34 /* HeaderBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderBar.swift; sourceTree = "<group>"; };
+		44EA0F30DFCBB10581D96FCF /* ModelTotals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTotals.swift; sourceTree = "<group>"; };
 		4B490B6EBAA011C224A8E1C3 /* PackageGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageGroup.swift; sourceTree = "<group>"; };
 		4C777D622C0B5C077AAA9CF9 /* Perch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Perch.entitlements; sourceTree = "<group>"; };
 		5C47DAB7FBCA945D66BC21AD /* sttprotocol */ = {isa = PBXFileReference; lastKnownFileType = folder; name = sttprotocol; path = .; sourceTree = SOURCE_ROOT; };
@@ -81,10 +85,12 @@
 			isa = PBXGroup;
 			children = (
 				206C2EE49E6928FD48BBA0F5 /* Assets.xcassets */,
+				29234E4B73EF536CBDD45CC2 /* DeleteConfirm.swift */,
 				D7F0E975E7B5DF5119C9B807 /* FolderWatch.swift */,
 				A642AB4634128434F1D188E0 /* FooterBar.swift */,
 				3803B2089780A9165D968A34 /* HeaderBar.swift */,
 				2D536AFFE3953ABAB0B417E5 /* LaunchAtLogin.swift */,
+				44EA0F30DFCBB10581D96FCF /* ModelTotals.swift */,
 				4B490B6EBAA011C224A8E1C3 /* PackageGroup.swift */,
 				60091EF2E23D3FADA830362B /* PackageList.swift */,
 				A172110ACADAA68F2399C529 /* PackageRow.swift */,
@@ -195,10 +201,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				79F284398D00DFB65B955449 /* DeleteConfirm.swift in Sources */,
 				DF8660E2072996002B7C086D /* FolderWatch.swift in Sources */,
 				7565CDB13383FA80D738CDEA /* FooterBar.swift in Sources */,
 				069D199BF3C41C3F828CE0C7 /* HeaderBar.swift in Sources */,
 				247A39C38C409C11CA345005 /* LaunchAtLogin.swift in Sources */,
+				014754D8954EAF538562B94A /* ModelTotals.swift in Sources */,
 				5BDB2838D3D263663EE802E3 /* PackageGroup.swift in Sources */,
 				CF7470F895FCE28D11B21A51 /* PackageList.swift in Sources */,
 				1392EDA5A5DF98ADDB787995 /* PackageRow.swift in Sources */,

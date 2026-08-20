@@ -52,8 +52,9 @@ public struct Fingerprinter: @unchecked Sendable {
 
         var files: [URL] = []
         for case let file as URL in enumerator {
-            let values = try file.resourceValues(forKeys: [.isRegularFileKey])
-            if values.isRegularFile == true {
+            let values = try file.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .isDirectoryKey])
+            if values.isDirectory == true { continue }
+            if values.isRegularFile == true || values.isSymbolicLink == true {
                 files.append(file)
             }
         }
@@ -61,7 +62,7 @@ public struct Fingerprinter: @unchecked Sendable {
     }
 
     private func hashFile(_ url: URL) throws -> SHA256.Digest {
-        let handle = try FileHandle(forReadingFrom: url)
+        let handle = try FileHandle(forReadingFrom: url.resolvingSymlinksInPath())
         defer { try? handle.close() }
         var hasher = SHA256()
         while true {
@@ -73,7 +74,7 @@ public struct Fingerprinter: @unchecked Sendable {
     }
 
     private func fileSize(_ url: URL) throws -> Int64 {
-        let values = try url.resourceValues(forKeys: [.fileSizeKey])
+        let values = try url.resolvingSymlinksInPath().resourceValues(forKeys: [.fileSizeKey])
         return Int64(values.fileSize ?? 0)
     }
 

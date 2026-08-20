@@ -144,6 +144,18 @@ public struct Scanner: @unchecked Sendable {
         if path.contains("WhisperKit") || path.contains("whisperkit") {
             return .library(name: "WhisperKit")
         }
+        if path.contains("Cotypist") || path.contains("cotypist") {
+            return .app(id: "cotypist", name: "Cotypist")
+        }
+        if path.contains("Souffleuse") {
+            return .app(id: "souffleuse", name: "Souffleuse")
+        }
+        if path.contains("KeyType") {
+            return .app(id: "keytype", name: "KeyType")
+        }
+        if path.contains("Cotabby") {
+            return .app(id: "cotabby", name: "Cotabby")
+        }
         return .unknown
     }
 
@@ -167,11 +179,17 @@ public struct Scanner: @unchecked Sendable {
             return Int64(values.fileSize ?? 0)
         }
         var total: Int64 = 0
-        if let enumerator = fileManager.enumerator(at: url, includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey], options: [.skipsHiddenFiles]) {
+        if let enumerator = fileManager.enumerator(
+            at: url,
+            includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey, .isSymbolicLinkKey, .isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        ) {
             for case let file as URL in enumerator {
-                let fileValues = try file.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey])
-                if fileValues.isRegularFile == true {
-                    total += Int64(fileValues.fileSize ?? 0)
+                let fileValues = try file.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .isDirectoryKey])
+                if fileValues.isDirectory == true { continue }
+                if fileValues.isRegularFile == true || fileValues.isSymbolicLink == true {
+                    let resolved = file.resolvingSymlinksInPath()
+                    total += Int64(try resolved.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0)
                 }
             }
         }

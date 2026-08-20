@@ -4,5 +4,6 @@ public enum ModelKind: String, Sendable, Codable, Hashable, CaseIterable {
     case tts
     case vad
     case diarization
+    case llm
     case unknown
 }

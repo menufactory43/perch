@@ -11,7 +11,15 @@ public enum FullDiskAccess {
     }
 
     public static var settingsURL: URL? {
-        URL(string: "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_AllFiles")
-            ?? URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")
+        paneURLs.first
+    }
+
+    /// Deep links that have existed across Ventura → Tahoe. First one that the system accepts wins.
+    public static var paneURLs: [URL] {
+        [
+            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_AllFiles",
+            "x-apple.systempreferences:com.apple.Settings.PrivacySecurity.PrivacyControls?Privacy_AllFiles",
+            "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles",
+        ].compactMap(URL.init(string:))
     }
 }

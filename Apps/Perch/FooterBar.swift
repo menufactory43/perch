@@ -5,10 +5,7 @@ struct FooterBar: View {
 
     var body: some View {
         HStack {
-            SettingsLink {
-                Label("Settings", systemImage: "gearshape")
-            }
-            .labelStyle(.titleAndIcon)
+            Button("Settings", systemImage: "gearshape", action: controller.openPerchSettings)
             Spacer()
             Button("Quit Perch", role: .destructive, action: controller.quit)
         }

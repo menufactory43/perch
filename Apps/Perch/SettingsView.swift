@@ -14,7 +14,7 @@ struct SettingsView: View {
                         setLaunchAtLogin(enabled)
                     }
                 Toggle("Keep sharing automatically", isOn: $controller.watchEnabled)
-                Text("When an app re-downloads a model you already have, or a new app is missing one, Perch clones it. The first Reclaim turns this on.")
+                Text("When enabled, Perch re-clones true duplicates. It does not copy a model into unrelated apps.")
                     .foregroundStyle(.secondary)
             }
 
@@ -31,7 +31,7 @@ struct SettingsView: View {
                 LabeledContent("Full Disk Access") {
                     Text(controller.hasFullDiskAccess ? "On" : "Off")
                 }
-                Button("Open System Settings", action: controller.openFullDiskAccessSettings)
+                Button("Add Perch in System Settings…", action: controller.openFullDiskAccessSettings)
                 Text("Perch never uploads models or audio. It only reads and clones files already on this Mac.")
                     .foregroundStyle(.secondary)
             }
@@ -49,6 +49,9 @@ struct SettingsView: View {
         .onAppear {
             launchAtLogin = LaunchAtLogin.isEnabled
             controller.refreshAccess()
+        }
+        .onDisappear {
+            controller.resignToMenuBar()
         }
     }
 

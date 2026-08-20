@@ -7,6 +7,9 @@ struct StatusPane: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 StatusHero()
+                if let group = controller.pendingDelete {
+                    DeleteConfirm(group: group)
+                }
                 if let error = controller.lastError {
                     Text(error)
                         .font(.callout)

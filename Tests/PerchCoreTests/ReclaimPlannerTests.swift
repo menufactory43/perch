@@ -61,8 +61,8 @@ struct ReclaimPlannerTests {
 
     @Test func missingBinGetsAPush() throws {
         let root = FileManager.default.temporaryDirectory.appending(path: "perch-push-\(UUID().uuidString)")
-        let dictus = root.appending(path: "Dictus/Models", directoryHint: .isDirectory)
-        let fluid = root.appending(path: "FluidVoice/Models", directoryHint: .isDirectory)
+        let dictus = root.appending(path: "Dictus/FluidAudio/Models", directoryHint: .isDirectory)
+        let fluid = root.appending(path: "FluidVoice/FluidAudio/Models", directoryHint: .isDirectory)
         try FileManager.default.createDirectory(at: dictus, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: fluid, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
@@ -107,8 +107,8 @@ struct ReclaimPlannerTests {
 
     @Test func existingDestinationIsNotPushed() throws {
         let root = FileManager.default.temporaryDirectory.appending(path: "perch-push-skip-\(UUID().uuidString)")
-        let dictus = root.appending(path: "Dictus/Models", directoryHint: .isDirectory)
-        let fluid = root.appending(path: "FluidVoice/Models", directoryHint: .isDirectory)
+        let dictus = root.appending(path: "Dictus/FluidAudio/Models", directoryHint: .isDirectory)
+        let fluid = root.appending(path: "FluidVoice/FluidAudio/Models", directoryHint: .isDirectory)
         try FileManager.default.createDirectory(at: dictus, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: fluid, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
@@ -182,5 +182,44 @@ struct ReclaimPlannerTests {
         #expect(plan.ingests.isEmpty)
         #expect(plan.replacements.isEmpty)
         #expect(plan.reclaimableBytes == 0)
+    }
+
+    @Test func ggufModelsFoldersAreNotFilledAcrossApps() throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: "perch-nofill-\(UUID().uuidString)")
+        let cotypist = root.appending(path: "Cotypist/Models", directoryHint: .isDirectory)
+        let souffleuse = root.appending(path: "Souffleuse/Models", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: cotypist, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: souffleuse, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let gguf = cotypist.appending(path: "gemma.gguf")
+        try Data(repeating: 1, count: 32).write(to: gguf)
+        let fingerprint = Fingerprint(hex: String(repeating: "88", count: 32))
+        let planner = ReclaimPlanner(
+            store: PackageStore(paths: PerchPaths(home: root.appending(path: "perch"))),
+            catalog: Catalog(
+                version: 0,
+                apps: [
+                    CatalogApp(id: "souffleuse", name: "Souffleuse", kind: .app, roots: [souffleuse.path]),
+                ]
+            ),
+            expander: PathExpander(home: root, containersRoot: root.appending(path: "Containers"))
+        )
+        let plan = planner.plan(
+            from: ScanReport(
+                scannedRoots: [cotypist],
+                placements: [
+                    Placement(
+                        url: gguf,
+                        fingerprint: fingerprint,
+                        logicalBytes: 32,
+                        source: .app(id: "cotypist", name: "Cotypist"),
+                        kind: .llm,
+                        displayName: "gemma.gguf"
+                    ),
+                ]
+            )
+        )
+        #expect(plan.pushes.isEmpty)
     }
 }

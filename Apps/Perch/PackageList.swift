@@ -14,7 +14,7 @@ struct PackageList: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 ForEach(groups) { group in
-                    PackageRow(group: group)
+                    PackageRow(group: group, onDelete: { controller.requestDelete(group) })
                 }
             }
         }
@@ -26,6 +26,7 @@ struct PackageList: View {
             .map { fingerprint, placements in
                 PackageGroup(
                     id: fingerprint.rawValue,
+                    fingerprint: fingerprint,
                     name: placements[0].displayName,
                     kind: placements[0].kind,
                     logicalBytes: placements[0].logicalBytes,

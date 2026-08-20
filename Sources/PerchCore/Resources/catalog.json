@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "apps": [
     {
       "id": "fluidaudio",
@@ -148,7 +148,12 @@
         "models--hexgrad--Kokoro*",
         "models--ggerganov--whisper.cpp",
         "models--argmaxinc--whisperkit-coreml",
-        "models--resemble-ai--chatterbox*"
+        "models--resemble-ai--chatterbox*",
+        "models--*vox*",
+        "models--*Vox*",
+        "models--openbmb--*",
+        "models--*TTS*",
+        "models--*tts*"
       ]
     },
     {
@@ -193,6 +198,54 @@
         "Library/Application Support/superwhisper",
         "Library/Application Support/SuperWhisper"
       ],
+      "huggingfaceGlobs": []
+    },
+    {
+      "id": "cotypist",
+      "name": "Cotypist",
+      "kind": "app",
+      "bundleIds": [
+        "app.cotypist.Cotypist",
+        "app.cocotypist.CotypistLab"
+      ],
+      "roots": [
+        "~/Library/Application Support/app.cotypist.Cotypist/Models",
+        "~/Library/Application Support/app.cocotypist.CotypistLab/Models"
+      ],
+      "containerRoots": [],
+      "huggingfaceGlobs": []
+    },
+    {
+      "id": "souffleuse",
+      "name": "Souffleuse",
+      "kind": "app",
+      "bundleIds": [],
+      "roots": [
+        "~/Library/Application Support/Souffleuse/Models"
+      ],
+      "containerRoots": [],
+      "huggingfaceGlobs": []
+    },
+    {
+      "id": "keytype",
+      "name": "KeyType",
+      "kind": "app",
+      "bundleIds": [],
+      "roots": [
+        "~/Library/Application Support/KeyType/Models"
+      ],
+      "containerRoots": [],
+      "huggingfaceGlobs": []
+    },
+    {
+      "id": "cotabby",
+      "name": "Cotabby",
+      "kind": "app",
+      "bundleIds": [],
+      "roots": [
+        "~/Library/Application Support/Cotabby/LlamaRuntime"
+      ],
+      "containerRoots": [],
       "huggingfaceGlobs": []
     }
   ]

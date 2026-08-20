@@ -15,8 +15,13 @@ public enum ModelPackage {
             return true
         }
 
-        if ["gguf", "bin"].contains(ext) {
-            let size = Int64(values?.fileSize ?? 0)
+        if ext == "gguf" {
+            let size = resolvedSize(url, values: values)
+            return size >= minimumFileBytes
+        }
+
+        if ext == "bin" {
+            let size = resolvedSize(url, values: values)
             return size >= minimumFileBytes && nameLooksLikeSpeechModel(url.lastPathComponent)
         }
 
@@ -42,8 +47,11 @@ public enum ModelPackage {
 
     public static func inferredKind(for url: URL) -> ModelKind {
         let name = url.path.lowercased()
-        if name.contains("kokoro") || name.contains("tts") || name.contains("piper") || name.contains("orpheus") {
+        if name.contains("kokoro") || name.contains("tts") || name.contains("piper") || name.contains("orpheus") || name.contains("voxcpm") || name.contains("chatterbox") {
             return .tts
+        }
+        if name.contains("gemma") || name.contains("llama") || (name.contains("qwen") && !name.contains("tts")) || name.hasSuffix(".gguf") {
+            return .llm
         }
         if name.contains("silero") || name.contains("vad") {
             return .vad
@@ -58,11 +66,18 @@ public enum ModelPackage {
     }
 
     public static func displayName(for url: URL) -> String {
-        let last = url.lastPathComponent
-        if last == "snapshots" || last.count == 40 {
-            return url.deletingLastPathComponent().lastPathComponent
-                .replacing("models--", with: "")
-                .replacing("--", with: "/")
+        var current = url
+        while current.lastPathComponent == "snapshots"
+            || current.lastPathComponent == "blobs"
+            || current.lastPathComponent.count == 40
+        {
+            let parent = current.deletingLastPathComponent()
+            if parent.path == current.path { break }
+            current = parent
+        }
+        let last = current.lastPathComponent
+        if last.hasPrefix("models--") {
+            return last.replacing("models--", with: "").replacing("--", with: "/")
         }
         return last
     }
@@ -111,14 +126,17 @@ public enum ModelPackage {
             "pyannote", "sensevoice", "paraformer", "cohere",
             "piper", "ggml", "encoder", "decoder", "asr", "tts",
             "fluidaudio", "eou", "sortformer", "chatterbox",
-            "sherpa", "moonshine", "vosk",
+            "sherpa", "moonshine", "vosk", "voxcpm", "vox",
         ]
         return tokens.contains { lowered.contains($0) }
     }
 
     private static func directoryContainsWeights(_ url: URL, fileManager: FileManager) -> Bool {
         let children = (try? fileManager.contentsOfDirectory(at: url, includingPropertiesForKeys: [.fileSizeKey], options: [.skipsHiddenFiles])) ?? []
-        let weightExts: Set<String> = ["mlmodelc", "mlpackage", "mlmodel", "safetensors", "onnx", "gguf", "bin", "pt", "npz", "weights"]
+        let weightExts: Set<String> = [
+            "mlmodelc", "mlpackage", "mlmodel", "safetensors", "onnx",
+            "gguf", "bin", "pt", "pth", "ckpt", "npz", "weights",
+        ]
         return children.contains { child in
             if weightExts.contains(child.pathExtension.lowercased()) {
                 return true
@@ -130,5 +148,14 @@ public enum ModelPackage {
 
     private static func looksLikeHuggingFaceSnapshot(_ url: URL) -> Bool {
         url.path.contains("/snapshots/") || url.path.contains("huggingface")
+    }
+
+    private static func resolvedSize(_ url: URL, values: URLResourceValues?) -> Int64 {
+        if let size = values?.fileSize, size >= minimumFileBytes {
+            return Int64(size)
+        }
+        let resolved = url.resolvingSymlinksInPath()
+        let size = try? resolved.resourceValues(forKeys: [.fileSizeKey]).fileSize
+        return Int64(size ?? 0)
     }
 }

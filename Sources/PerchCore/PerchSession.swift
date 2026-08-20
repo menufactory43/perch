@@ -8,6 +8,7 @@ public struct PerchSession: @unchecked Sendable {
     public var store: PackageStore
     public var planner: ReclaimPlanner
     public var reclaimer: Reclaimer
+    public var remover: ModelRemover
 
     public init(paths: PerchPaths = .resolve(), catalog: Catalog? = nil) throws {
         let loaded = try catalog ?? CatalogLoader.bundled()
@@ -18,6 +19,7 @@ public struct PerchSession: @unchecked Sendable {
         self.store = store
         self.planner = ReclaimPlanner(store: store, catalog: loaded, expander: PathExpander.default())
         self.reclaimer = Reclaimer(store: store)
+        self.remover = ModelRemover(store: store)
     }
 
     public func scan(progress: (@Sendable (String) -> Void)? = nil) throws -> ScanReport {
@@ -30,5 +32,13 @@ public struct PerchSession: @unchecked Sendable {
 
     public func reclaim(_ plan: ReclaimPlan, progress: (@Sendable (String) -> Void)? = nil) throws -> ReclaimResult {
         try reclaimer.execute(plan, progress: progress)
+    }
+
+    public func removalPlan(for fingerprint: Fingerprint, report: ScanReport) -> RemovalPlan {
+        remover.plan(fingerprint: fingerprint, placements: report.placements)
+    }
+
+    public func remove(_ plan: RemovalPlan) throws {
+        try remover.execute(plan)
     }
 }

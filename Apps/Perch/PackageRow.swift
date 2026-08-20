@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PackageRow: View {
     var group: PackageGroup
+    var onDelete: () -> Void
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
@@ -23,8 +24,12 @@ struct PackageRow: View {
                 .font(.callout)
                 .monospacedDigit()
                 .foregroundStyle(.secondary)
+            Button("Delete \(group.name)", systemImage: "trash", action: onDelete)
+                .labelStyle(.iconOnly)
+                .buttonStyle(.borderless)
+                .foregroundStyle(.secondary)
+                .help("Delete this model from every app and from Perch")
         }
-        .accessibilityElement(children: .combine)
         .padding(.vertical, 4)
     }
 
@@ -34,6 +39,7 @@ struct PackageRow: View {
         case .tts: "speaker.wave.2"
         case .vad: "ellipsis.viewfinder"
         case .diarization: "person.2"
+        case .llm: "cpu"
         case .unknown: "doc"
         }
     }

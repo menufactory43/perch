@@ -28,6 +28,14 @@ struct PerchCLI {
         case "reclaim":
             let dryRun = args.contains("--dry-run")
             try reclaim(dryRun: dryRun)
+        case "delete":
+            guard args.contains("--yes") else {
+                throw CLIError.message("usage: perch delete <sha256> --yes")
+            }
+            guard let token = args.dropFirst().first(where: { !$0.hasPrefix("-") }) else {
+                throw CLIError.message("usage: perch delete <sha256> --yes")
+            }
+            try delete(token)
         case "resolve":
             guard let token = args.dropFirst().first else {
                 throw CLIError.message("usage: perch resolve <fingerprint>")
@@ -86,6 +94,20 @@ struct PerchCLI {
         }
     }
 
+    private static func delete(_ token: String) throws {
+        guard let fingerprint = Fingerprint(rawValue: token) else {
+            throw CLIError.message("not a SHA-256 fingerprint")
+        }
+        let session = try session()
+        let report = try session.scan()
+        let plan = session.removalPlan(for: fingerprint, report: report)
+        if plan.roots.isEmpty {
+            throw CLIError.message("nothing to delete")
+        }
+        try session.remove(plan)
+        print("deleted \(plan.roots.count) locations, \(ByteFormatting.string(plan.logicalBytes))")
+    }
+
     private static func resolve(_ token: String) throws {
         let session = try session()
         guard let fingerprint = Fingerprint(rawValue: token) else {
@@ -118,6 +140,7 @@ struct PerchCLI {
           perch scan                Same as status, with progress on stderr
           perch reclaim             Clone duplicates and fill apps that are missing a model
           perch reclaim --dry-run   Show the plan only
+          perch delete <sha256> --yes  Remove a model from apps and the store
           perch resolve <sha256>    Print the canonical package path
           perch path                Print PERCH_HOME
           perch help

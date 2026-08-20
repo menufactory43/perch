@@ -46,11 +46,11 @@ Unknown apps that drop models into `Application Support/FluidAudio/Models` (the 
 
 ## Push
 
-If fingerprint F lives in one app folder and another **existing** catalog folder does not contain F, Perch clones `store/packages/<F>` to `<folder>/<original file name>`. It never overwrites a path that already exists (a different version of the same name stays). Hugging Face caches and the Perch store are not push destinations.
+Only destinations whose path contains `FluidAudio` (the shared Dictus / FluidVoice / VoiceInk layout). Perch clones `store/packages/<F>` to `<folder>/<original file name>` when that path does not already exist. It never overwrites. Hugging Face caches, GGUF `Models` folders, and the Perch store are not push destinations — filling every folder named `Models` copies Gemma into KeyType and explodes logical size.
 
 ## Watch
 
-After the first reclaim, the menu bar app keeps sharing automatically: FSEvents on scanned roots, plus a 5-minute poll. Each tick scans, then applies reclaim + push without another confirmation.
+Optional (Settings). FSEvents on scanned roots plus a 5-minute poll. Each tick scans, then applies **reclaim only** (duplicates → clones). It does not push.
 
 ## What Perch will not do (v1)
 
