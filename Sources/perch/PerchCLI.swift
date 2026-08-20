@@ -18,7 +18,7 @@ struct PerchCLI {
         case nil, "help", "-h", "--help":
             print(usage)
         case "version", "-v", "--version":
-            print("perch 1.0.0")
+            print("perch 1.0.1")
         case "path":
             print(PerchPaths.resolve().home.path)
         case "scan":
