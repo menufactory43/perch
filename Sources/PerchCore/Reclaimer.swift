@@ -11,14 +11,21 @@ public struct Reclaimer: @unchecked Sendable {
         self.fileManager = fileManager
     }
 
-    public func execute(_ plan: ReclaimPlan, progress: (@Sendable (String) -> Void)? = nil) throws -> ReclaimResult {
+    public func execute(_ plan: ReclaimPlan, progress: (@Sendable (WorkProgress) -> Void)? = nil) throws -> ReclaimResult {
         var cloned = 0
         var copied = 0
         var failed: [String] = []
         var reclaimed: Int64 = 0
+        let total = plan.ingests.count + plan.pushes.count + plan.replacements.count
+        var step = 0
+
+        func tick(_ detail: String) {
+            progress?(WorkProgress(completed: step, total: max(total, 1), detail: detail))
+            step += 1
+        }
 
         for ingest in plan.ingests {
-            progress?("Storing \(ingest.source.lastPathComponent)")
+            tick("Storing \(ingest.source.lastPathComponent)")
             do {
                 let kind = try store.ingest(from: ingest.source, fingerprint: ingest.fingerprint)
                 tally(kind, cloned: &cloned, copied: &copied)
@@ -30,7 +37,7 @@ public struct Reclaimer: @unchecked Sendable {
         var pushed = 0
 
         for push in plan.pushes {
-            progress?("Filling \(push.destination.path)")
+            tick("Filling \(push.fileName)")
             let source = store.url(for: push.fingerprint)
             guard store.contains(push.fingerprint) else {
                 failed.append(push.destination.path + ": missing package in store")
@@ -53,7 +60,7 @@ public struct Reclaimer: @unchecked Sendable {
         }
 
         for replacement in plan.replacements {
-            progress?("Linking \(replacement.destination.lastPathComponent)")
+            tick("Linking \(replacement.destination.lastPathComponent)")
             let source = store.url(for: replacement.fingerprint)
             guard store.contains(replacement.fingerprint) else {
                 failed.append(replacement.destination.path + ": missing package in store")

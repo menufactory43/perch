@@ -52,8 +52,8 @@ struct PerchCLI {
 
     private static func scan() throws {
         let session = try session()
-        let report = try session.scan { root in
-            fputs("scanning \(root)\n", stderr)
+        let report = try session.scan { progress in
+            fputs("\(progress.detail)\n", stderr)
         }
         printReport(report, plan: session.plan(from: report))
     }
@@ -110,12 +110,8 @@ struct PerchCLI {
 
     private static func resolve(_ token: String) throws {
         let session = try session()
-        guard let fingerprint = Fingerprint(rawValue: token) else {
-            throw CLIError.message("not a SHA-256 fingerprint")
-        }
-        let url = session.store.url(for: fingerprint)
-        guard session.store.contains(fingerprint) else {
-            throw CLIError.message("not in store: \(url.path)")
+        guard let url = session.resolve(name: token) else {
+            throw CLIError.message("not in store: \(token)")
         }
         print(url.path)
     }
@@ -141,7 +137,7 @@ struct PerchCLI {
           perch reclaim             Clone duplicates and fill apps that are missing a model
           perch reclaim --dry-run   Show the plan only
           perch delete <sha256> --yes  Remove a model from apps and the store
-          perch resolve <sha256>    Print the canonical package path
+          perch resolve <name|sha256>  Print the canonical package path
           perch path                Print PERCH_HOME
           perch help
         """

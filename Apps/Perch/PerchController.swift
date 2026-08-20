@@ -17,6 +17,7 @@ final class PerchController {
     var showReclaimConfirmation = false
     var pendingDelete: PackageGroup?
     var isDeleting = false
+    var progressFraction: Double?
 
     var watchEnabled: Bool {
         didSet {
@@ -223,12 +224,21 @@ final class PerchController {
             defer {
                 isScanning = false
                 statusMessage = nil
+                progressFraction = nil
             }
             do {
                 let session = try currentSession()
-                let report = try await Task.detached(priority: .userInitiated) {
-                    try session.scan()
-                }.value
+                let (stream, continuation) = AsyncStream<WorkProgress>.makeStream()
+                let work = Task.detached(priority: .userInitiated) {
+                    defer { continuation.finish() }
+                    return try session.scan { continuation.yield($0) }
+                }
+                for await progress in stream {
+                    statusMessage = progress.detail
+                    progressFraction = progress.fraction
+                }
+                let report = try await work.value
+                progressFraction = nil
                 let plan = session.plan(from: report)
                 self.report = report
                 self.plan = plan
@@ -260,9 +270,17 @@ final class PerchController {
             do {
                 let session = try currentSession()
                 let snapshot = plan
-                let result = try await Task.detached(priority: .userInitiated) {
-                    try session.reclaim(snapshot)
-                }.value
+                let (stream, continuation) = AsyncStream<WorkProgress>.makeStream()
+                let work = Task.detached(priority: .userInitiated) {
+                    defer { continuation.finish() }
+                    return try session.reclaim(snapshot) { continuation.yield($0) }
+                }
+                for await progress in stream {
+                    statusMessage = progress.detail
+                    progressFraction = progress.fraction
+                }
+                let result = try await work.value
+                progressFraction = nil
                 lastResult = result
                 if let first = result.failed.first {
                     lastError = first

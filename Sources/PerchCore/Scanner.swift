@@ -6,38 +6,54 @@ public struct Scanner: @unchecked Sendable {
     public var fingerprinter: Fingerprinter
     public var paths: PerchPaths
     public var fileManager: FileManager
+    public var store: PackageStore?
 
     public init(
         catalog: Catalog,
         expander: PathExpander = .default(),
         fingerprinter: Fingerprinter = Fingerprinter(),
         paths: PerchPaths = .resolve(),
-        fileManager: FileManager = .default
+        fileManager: FileManager = .default,
+        store: PackageStore? = nil
     ) {
         self.catalog = catalog
         self.expander = expander
         self.fingerprinter = fingerprinter
         self.paths = paths
         self.fileManager = fileManager
+        self.store = store
     }
 
-    public func scan(progress: (@Sendable (String) -> Void)? = nil) throws -> ScanReport {
+    public func scan(progress: (@Sendable (WorkProgress) -> Void)? = nil) throws -> ScanReport {
         let roots = collectRoots()
-        var cache = HashCache.load(from: paths.hashCache)
-        var placements: [Placement] = []
+        var discovered: [URL] = []
         var seen = Set<String>()
-
         for root in roots {
-            progress?(root.path)
-            let packages = ModelPackage.discover(in: root, fileManager: fileManager)
-            for package in packages {
+            for package in ModelPackage.discover(in: root, fileManager: fileManager) {
                 let standardized = package.standardizedFileURL.path
                 guard seen.insert(standardized).inserted else { continue }
-                if let placement = try? place(package, cache: &cache), placement.logicalBytes >= ModelPackage.minimumFileBytes {
-                    placements.append(placement)
-                }
+                discovered.append(package)
             }
         }
+
+        var cache = HashCache.load(from: paths.hashCache)
+        var placements: [Placement] = []
+        let total = discovered.count
+        for (index, package) in discovered.enumerated() {
+            progress?(
+                WorkProgress(
+                    completed: index,
+                    total: max(total, 1),
+                    detail: "Scanning \(package.lastPathComponent)"
+                )
+            )
+            if let placement = try? place(package, cache: &cache), placement.logicalBytes >= ModelPackage.minimumFileBytes {
+                placements.append(placement)
+                store?.remember(name: placement.displayName, fingerprint: placement.fingerprint)
+                store?.remember(name: package.lastPathComponent, fingerprint: placement.fingerprint)
+            }
+        }
+        progress?(WorkProgress(completed: total, total: max(total, 1), detail: "Scan complete"))
 
         try? cache.save(to: paths.hashCache)
         return ScanReport(scannedRoots: roots, placements: placements)

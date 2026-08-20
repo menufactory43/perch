@@ -8,6 +8,7 @@ Perch is a **store**, not an inference daemon. Apps keep their own engines (Flui
 $PERCH_HOME                          default: ~/Library/Application Support/Perch
   store/packages/<sha256>/           canonical package tree
   hash-cache.json                    path + mtime → fingerprint
+  aliases/<name>                     utf-8 sha256 for that file/folder name
   ledger.json                        reserved
 ```
 

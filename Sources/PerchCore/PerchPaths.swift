@@ -33,6 +33,10 @@ public struct PerchPaths: Sendable, Equatable {
         home.appending(path: "ledger.json")
     }
 
+    public var aliasesRoot: URL {
+        storeRoot.appending(path: "aliases", directoryHint: .isDirectory)
+    }
+
     public func packageURL(for fingerprint: Fingerprint) -> URL {
         packagesRoot.appending(path: fingerprint.rawValue, directoryHint: .isDirectory)
     }

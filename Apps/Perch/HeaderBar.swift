@@ -13,10 +13,28 @@ struct HeaderBar: View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            if controller.isScanning || controller.isReclaiming {
-                ProgressView()
-                    .controlSize(.small)
-                    .accessibilityLabel(controller.statusMessage ?? String(localized: "Working"))
+            if controller.isScanning || controller.isReclaiming || controller.isDeleting {
+                VStack(alignment: .trailing, spacing: 4) {
+                    if let fraction = controller.progressFraction {
+                        ProgressView(value: fraction)
+                            .progressViewStyle(.linear)
+                            .frame(width: 96)
+                            .accessibilityValue("\(Int(fraction * 100)) percent")
+                    } else {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
+                    if let message = controller.statusMessage {
+                        Text(message)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                            .frame(maxWidth: 180, alignment: .trailing)
+                    }
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(controller.statusMessage ?? String(localized: "Working"))
             }
         }
         .padding()

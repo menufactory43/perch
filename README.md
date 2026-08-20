@@ -21,9 +21,18 @@ Perch does not transcribe, synthesize, or download from Hugging Face. It is not 
 
 ## Install
 
-**[Download Perch-1.0.0.dmg](https://github.com/menufactory43/perch/releases/latest)** (signed & notarized, Intel + Apple Silicon).
+**Homebrew**
 
-Open the disk image, drag **Perch** onto **Applications**, launch it from there. It lives in the menu bar (cylinder icon), not the Dock.
+```bash
+brew tap menufactory43/perch
+brew install --cask perch
+```
+
+**[DMG](https://github.com/menufactory43/perch/releases/latest)** (signed & notarized, Intel + Apple Silicon): open it, drag **Perch** onto **Applications**.
+
+It lives in the menu bar (cylinder icon), not the Dock.
+
+Apps that download Parakeet or Whisper: read [docs/ADOPT.md](docs/ADOPT.md) and call `perch resolve <name>` (or `PerchSession.resolve`) before hitting the network.
 
 To build from source you need [Xcode](https://developer.apple.com/xcode/) 16+ and [XcodeGen](https://github.com/yonaskolb/XcodeGen):
 

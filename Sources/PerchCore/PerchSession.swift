@@ -15,22 +15,26 @@ public struct PerchSession: @unchecked Sendable {
         let store = PackageStore(paths: paths)
         self.paths = paths
         self.catalog = loaded
-        self.scanner = Scanner(catalog: loaded, paths: paths)
+        self.scanner = Scanner(catalog: loaded, paths: paths, store: store)
         self.store = store
         self.planner = ReclaimPlanner(store: store, catalog: loaded, expander: PathExpander.default())
         self.reclaimer = Reclaimer(store: store)
         self.remover = ModelRemover(store: store)
     }
 
-    public func scan(progress: (@Sendable (String) -> Void)? = nil) throws -> ScanReport {
+    public func scan(progress: (@Sendable (WorkProgress) -> Void)? = nil) throws -> ScanReport {
         try scanner.scan(progress: progress)
+    }
+
+    public func resolve(name: String) -> URL? {
+        store.resolve(name: name)
     }
 
     public func plan(from report: ScanReport) -> ReclaimPlan {
         planner.plan(from: report)
     }
 
-    public func reclaim(_ plan: ReclaimPlan, progress: (@Sendable (String) -> Void)? = nil) throws -> ReclaimResult {
+    public func reclaim(_ plan: ReclaimPlan, progress: (@Sendable (WorkProgress) -> Void)? = nil) throws -> ReclaimResult {
         try reclaimer.execute(plan, progress: progress)
     }
 
