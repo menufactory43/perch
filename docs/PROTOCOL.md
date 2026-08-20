@@ -44,6 +44,14 @@ Two packages with the same fingerprint are byte-identical trees. Perch then clon
 
 Unknown apps that drop models into `Application Support/FluidAudio/Models` (the usual FluidAudio location, including inside a container) are picked up without a catalog row.
 
+## Push
+
+If fingerprint F lives in one app folder and another **existing** catalog folder does not contain F, Perch clones `store/packages/<F>` to `<folder>/<original file name>`. It never overwrites a path that already exists (a different version of the same name stays). Hugging Face caches and the Perch store are not push destinations.
+
+## Watch
+
+After the first reclaim, the menu bar app keeps sharing automatically: FSEvents on scanned roots, plus a 5-minute poll. Each tick scans, then applies reclaim + push without another confirmation.
+
 ## What Perch will not do (v1)
 
 - Run STT or TTS

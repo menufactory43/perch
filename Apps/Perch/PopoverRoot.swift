@@ -26,14 +26,14 @@ struct PopoverRoot: View {
             controller.refreshAccess()
         }
         .confirmationDialog(
-            String(localized: "Replace extra copies with APFS clones?"),
+            String(localized: "Share models across apps?"),
             isPresented: $controller.showReclaimConfirmation,
             titleVisibility: .visible
         ) {
-            Button(String(localized: "Reclaim Space"), action: controller.confirmReclaim)
+            Button(controller.primaryActionTitle, action: controller.confirmReclaim)
             Button(String(localized: "Cancel"), role: .cancel) {}
         } message: {
-            Text("Apps keep their files. Perch stores one copy and clones the rest. This cannot be automatically undone, but any app can re-download its model.")
+            Text("Perch stores one copy, replaces duplicates with APFS clones, and copies missing models into apps that don’t have them yet. Watching stays on afterwards so this keeps happening.")
         }
     }
 }

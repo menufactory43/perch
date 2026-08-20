@@ -19,6 +19,7 @@
 		96EBC61C13AA4E5A36BB3EDB /* StatusHero.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AF74CC4132D5B1AB6301918 /* StatusHero.swift */; };
 		A05090E84B7CD15E07DBDE0B /* PerchCore in Frameworks */ = {isa = PBXBuildFile; productRef = 530281086F0BEE1A4DCA5303 /* PerchCore */; };
 		CF7470F895FCE28D11B21A51 /* PackageList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60091EF2E23D3FADA830362B /* PackageList.swift */; };
+		DF8660E2072996002B7C086D /* FolderWatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7F0E975E7B5DF5119C9B807 /* FolderWatch.swift */; };
 		F0875C9C6FE2DF520DDE4F09 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 735B898BCC5A0851299F512F /* SettingsView.swift */; };
 		F18F60AE07299A9D89318EA9 /* PerchMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E4EDB89D6EE3BEF29BDA9A7 /* PerchMetrics.swift */; };
 		F66F19476BCDAA7E04DCAEB4 /* PerchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73AD6A4A12E2F1DD2344C986 /* PerchApp.swift */; };
@@ -45,6 +46,7 @@
 		A642AB4634128434F1D188E0 /* FooterBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FooterBar.swift; sourceTree = "<group>"; };
 		BD2A62F2DB36BBED2E62FDEB /* Perch-Info.generated.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Perch-Info.generated.plist"; sourceTree = "<group>"; };
 		D41D4D3B908363F711572982 /* Perch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Perch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D7F0E975E7B5DF5119C9B807 /* FolderWatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderWatch.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +81,7 @@
 			isa = PBXGroup;
 			children = (
 				206C2EE49E6928FD48BBA0F5 /* Assets.xcassets */,
+				D7F0E975E7B5DF5119C9B807 /* FolderWatch.swift */,
 				A642AB4634128434F1D188E0 /* FooterBar.swift */,
 				3803B2089780A9165D968A34 /* HeaderBar.swift */,
 				2D536AFFE3953ABAB0B417E5 /* LaunchAtLogin.swift */,
@@ -192,6 +195,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DF8660E2072996002B7C086D /* FolderWatch.swift in Sources */,
 				7565CDB13383FA80D738CDEA /* FooterBar.swift in Sources */,
 				069D199BF3C41C3F828CE0C7 /* HeaderBar.swift in Sources */,
 				247A39C38C409C11CA345005 /* LaunchAtLogin.swift in Sources */,

@@ -25,10 +25,16 @@ final class PerchController {
 
     private var session: PerchSession?
     @ObservationIgnored private var watchTask: Task<Void, Never>?
+    @ObservationIgnored private var folderWatch: FolderWatch?
 
     init() {
         watchEnabled = UserDefaults.standard.bool(forKey: "watchEnabled")
         session = try? PerchSession()
+        folderWatch = FolderWatch { [weak self] in
+            Task { @MainActor in
+                self?.maintain()
+            }
+        }
         restartWatch()
     }
 
@@ -66,13 +72,29 @@ final class PerchController {
                     logicalBytes: 1_200_000_000
                 ),
             ],
+            pushes: [
+                PlannedPush(
+                    fingerprint: fingerprint,
+                    destination: URL(fileURLWithPath: "/tmp/NewApp/parakeet.mlmodelc"),
+                    fileName: "parakeet.mlmodelc"
+                ),
+            ],
             reclaimableBytes: 1_200_000_000
         )
         return controller
     }
 
     var reclaimableBytes: Int64 { plan?.reclaimableBytes ?? 0 }
-    var canReclaim: Bool { (plan?.replacements.isEmpty == false) && !isReclaiming && !isScanning }
+    var pushCount: Int { plan?.pushes.count ?? 0 }
+    var canReclaim: Bool { (plan?.isEmpty == false) && !isReclaiming && !isScanning }
+
+    var primaryActionTitle: String {
+        let hasReclaim = reclaimableBytes > 0
+        let hasPush = pushCount > 0
+        if hasReclaim && hasPush { return String(localized: "Reclaim & Fill") }
+        if hasPush { return String(localized: "Fill Apps") }
+        return String(localized: "Reclaim Space")
+    }
 
     func refreshAccess() {
         hasFullDiskAccess = FullDiskAccess.isGranted()
@@ -86,7 +108,39 @@ final class PerchController {
     }
 
     func scan() {
-        guard !isScanning else { return }
+        runScan(autoApply: false)
+    }
+
+    func maintain() {
+        guard watchEnabled, hasFullDiskAccess else { return }
+        runScan(autoApply: true)
+    }
+
+    func requestReclaim() {
+        showReclaimConfirmation = true
+    }
+
+    func confirmReclaim() {
+        showReclaimConfirmation = false
+        guard let plan, !isReclaiming else { return }
+        watchEnabled = true
+        execute(plan)
+    }
+
+    func revealStore() {
+        guard let session else { return }
+        try? FileManager.default.createDirectory(at: session.paths.storeRoot, withIntermediateDirectories: true)
+        NSWorkspace.shared.open(session.paths.storeRoot)
+    }
+
+    func quit() {
+        watchTask?.cancel()
+        folderWatch?.stop()
+        NSApp.terminate(nil)
+    }
+
+    private func runScan(autoApply: Bool) {
+        guard !isScanning, !isReclaiming else { return }
         refreshAccess()
         isScanning = true
         lastError = nil
@@ -102,30 +156,26 @@ final class PerchController {
                 let report = try await Task.detached(priority: .userInitiated) {
                     try session.scan()
                 }.value
+                let plan = session.plan(from: report)
                 self.report = report
-                self.plan = session.plan(from: report)
+                self.plan = plan
+                updateFolderWatch()
+                if autoApply, watchEnabled, !plan.isEmpty {
+                    execute(plan)
+                }
             } catch {
                 lastError = error.localizedDescription
             }
         }
     }
 
-    func requestReclaim() {
-        showReclaimConfirmation = true
-    }
-
-    func confirmReclaim() {
-        showReclaimConfirmation = false
-        guard let plan, !isReclaiming else { return }
+    private func execute(_ plan: ReclaimPlan) {
+        guard !isReclaiming else { return }
         isReclaiming = true
         lastError = nil
-        statusMessage = String(localized: "Reclaiming space…")
+        statusMessage = String(localized: "Updating copies…")
 
         Task {
-            defer {
-                isReclaiming = false
-                statusMessage = nil
-            }
             do {
                 let session = try currentSession()
                 let snapshot = plan
@@ -136,33 +186,37 @@ final class PerchController {
                 if let first = result.failed.first {
                     lastError = first
                 }
-                scan()
             } catch {
                 lastError = error.localizedDescription
             }
+            isReclaiming = false
+            statusMessage = nil
+            runScan(autoApply: false)
         }
-    }
-
-    func revealStore() {
-        guard let session else { return }
-        try? FileManager.default.createDirectory(at: session.paths.storeRoot, withIntermediateDirectories: true)
-        NSWorkspace.shared.open(session.paths.storeRoot)
-    }
-
-    func quit() {
-        watchTask?.cancel()
-        NSApp.terminate(nil)
     }
 
     private func restartWatch() {
         watchTask?.cancel()
-        guard watchEnabled else { return }
-        watchTask = Task { [weak self] in
-            while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(900))
-                self?.scan()
+        if watchEnabled, hasFullDiskAccess {
+            updateFolderWatch()
+            watchTask = Task { [weak self] in
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .seconds(300))
+                    self?.maintain()
+                }
             }
+        } else {
+            folderWatch?.stop()
         }
+    }
+
+    private func updateFolderWatch() {
+        guard watchEnabled, hasFullDiskAccess else {
+            folderWatch?.stop()
+            return
+        }
+        let paths = report?.scannedRoots.map(\.path) ?? []
+        folderWatch?.start(paths: paths)
     }
 
     private func currentSession() throws -> PerchSession {

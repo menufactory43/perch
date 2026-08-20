@@ -13,7 +13,9 @@ Developers who *do* want to cooperate can depend on `PerchCore` and resolve a mo
 1. Open `Perch.xcodeproj` (generate it with [XcodeGen](https://github.com/yonaskolb/XcodeGen): `xcodegen generate`) and run **Perch**.
 2. Click the cylinder in the menu bar.
 3. Grant **Full Disk Access** when asked (System Settings → Privacy & Security).
-4. Click **Reclaim Space**.
+4. Click **Reclaim Space** (or **Fill Apps** if a new app is missing a model you already have).
+
+The first reclaim turns on **Keep sharing automatically**: Perch watches those folders. If an app re-downloads a duplicate, or a newly installed app has an empty model folder, Perch clones the copy you already paid for.
 
 Perch does not upload audio or models. It is not sandboxed, and it is not on the App Store — it has to write into other apps’ folders.
 

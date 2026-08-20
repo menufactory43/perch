@@ -62,19 +62,25 @@ struct PerchCLI {
         let session = try session()
         let report = try session.scan()
         let plan = session.plan(from: report)
-        if plan.replacements.isEmpty {
-            print("Nothing to reclaim. \(report.uniquePackageCount) unique packages already stored once.")
+        if plan.isEmpty {
+            print("Nothing to reclaim or fill. \(report.uniquePackageCount) unique packages already stored once.")
             return
         }
         print("Would reclaim \(ByteFormatting.string(plan.reclaimableBytes)) across \(plan.replacements.count) copies.")
+        if !plan.pushes.isEmpty {
+            print("Would fill \(plan.pushes.count) missing app folders.")
+        }
         if dryRun {
             for item in plan.replacements {
                 print("  clone → \(item.destination.path)")
             }
+            for item in plan.pushes {
+                print("  fill  → \(item.destination.path)")
+            }
             return
         }
         let result = try session.reclaim(plan)
-        print("Cloned \(result.cloned), copied \(result.copied), reclaimed \(ByteFormatting.string(result.reclaimedBytes)).")
+        print("Cloned \(result.cloned), copied \(result.copied), filled \(result.pushed), reclaimed \(ByteFormatting.string(result.reclaimedBytes)).")
         for failure in result.failed {
             fputs("  warning: \(failure)\n", stderr)
         }
@@ -96,6 +102,7 @@ struct PerchCLI {
         print("packages: \(report.placements.count) copies, \(report.uniquePackageCount) unique")
         print("logical:  \(ByteFormatting.string(report.totalLogicalBytes))")
         print("reclaimable: \(ByteFormatting.string(plan.reclaimableBytes))")
+        print("fill: \(plan.pushes.count) missing copies")
         for (fingerprint, group) in report.groups.sorted(by: { $0.value[0].displayName < $1.value[0].displayName }) {
             let name = group[0].displayName
             let apps = group.map(\.source.displayName).joined(separator: ", ")
@@ -109,7 +116,7 @@ struct PerchCLI {
         Usage:
           perch status              Scan and show reclaimable space
           perch scan                Same as status, with progress on stderr
-          perch reclaim             Replace duplicate copies with APFS clones
+          perch reclaim             Clone duplicates and fill apps that are missing a model
           perch reclaim --dry-run   Show the plan only
           perch resolve <sha256>    Print the canonical package path
           perch path                Print PERCH_HOME

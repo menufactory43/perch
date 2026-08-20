@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "apps": [
     {
       "id": "fluidaudio",
@@ -64,6 +64,55 @@
       "huggingfaceGlobs": []
     },
     {
+      "id": "voiceink",
+      "name": "VoiceInk",
+      "kind": "app",
+      "bundleIds": [
+        "com.prakashjoshipax.VoiceInk"
+      ],
+      "roots": [
+        "~/Library/Application Support/VoiceInk"
+      ],
+      "containerRoots": [
+        "Library/Application Support/VoiceInk",
+        "Library/Application Support/FluidAudio/Models"
+      ],
+      "huggingfaceGlobs": []
+    },
+    {
+      "id": "typewhisper",
+      "name": "TypeWhisper",
+      "kind": "app",
+      "bundleIds": [
+        "com.typewhisper.app"
+      ],
+      "roots": [
+        "~/Library/Application Support/TypeWhisper/PluginData/com.typewhisper.whisperkit/models",
+        "~/Library/Application Support/FluidAudio/Models"
+      ],
+      "containerRoots": [
+        "Library/Application Support/TypeWhisper",
+        "Library/Application Support/FluidAudio/Models"
+      ],
+      "huggingfaceGlobs": []
+    },
+    {
+      "id": "pindrop",
+      "name": "Pindrop",
+      "kind": "app",
+      "bundleIds": [
+        "com.watzon.pindrop",
+        "dev.watzon.Pindrop"
+      ],
+      "roots": [],
+      "containerRoots": [
+        "Library/Application Support/Pindrop",
+        "Library/Application Support/WhisperKit",
+        "Library/Caches/argmaxinc.whisperkit"
+      ],
+      "huggingfaceGlobs": []
+    },
+    {
       "id": "whisperkit",
       "name": "WhisperKit",
       "kind": "library",
@@ -92,8 +141,14 @@
         "models--*whisper*",
         "models--*kokoro*",
         "models--*piper*",
+        "models--*silero*",
+        "models--*chatterbox*",
+        "models--*sherpa*",
         "models--FluidInference--*",
-        "models--hexgrad--Kokoro*"
+        "models--hexgrad--Kokoro*",
+        "models--ggerganov--whisper.cpp",
+        "models--argmaxinc--whisperkit-coreml",
+        "models--resemble-ai--chatterbox*"
       ]
     },
     {

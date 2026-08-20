@@ -5,9 +5,10 @@ import Testing
 struct CatalogTests {
     @Test func bundledCatalogLoads() throws {
         let catalog = try CatalogLoader.bundled()
-        #expect(catalog.version == 1)
+        #expect(catalog.version == 2)
         #expect(catalog.apps.contains { $0.id == "fluidaudio" })
         #expect(catalog.apps.contains { $0.id == "huggingface" })
+        #expect(catalog.apps.contains { $0.id == "voiceink" })
     }
 
     @Test func expanderResolvesHome() {

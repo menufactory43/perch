@@ -13,8 +13,8 @@ struct SettingsView: View {
                     .onChange(of: launchAtLogin) { _, enabled in
                         setLaunchAtLogin(enabled)
                     }
-                Toggle("Watch for new downloads", isOn: $controller.watchEnabled)
-                Text("When enabled, Perch scans again every 15 minutes while it is running.")
+                Toggle("Keep sharing automatically", isOn: $controller.watchEnabled)
+                Text("When an app re-downloads a model you already have, or a new app is missing one, Perch clones it. The first Reclaim turns this on.")
                     .foregroundStyle(.secondary)
             }
 

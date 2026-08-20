@@ -16,7 +16,7 @@ public struct PerchSession: @unchecked Sendable {
         self.catalog = loaded
         self.scanner = Scanner(catalog: loaded, paths: paths)
         self.store = store
-        self.planner = ReclaimPlanner(store: store)
+        self.planner = ReclaimPlanner(store: store, catalog: loaded, expander: PathExpander.default())
         self.reclaimer = Reclaimer(store: store)
     }
 

@@ -110,7 +110,8 @@ public enum ModelPackage {
             "parakeet", "whisper", "kokoro", "nemotron", "silero",
             "pyannote", "sensevoice", "paraformer", "cohere",
             "piper", "ggml", "encoder", "decoder", "asr", "tts",
-            "fluidaudio", "eou", "sortformer",
+            "fluidaudio", "eou", "sortformer", "chatterbox",
+            "sherpa", "moonshine", "vosk",
         ]
         return tokens.contains { lowered.contains($0) }
     }

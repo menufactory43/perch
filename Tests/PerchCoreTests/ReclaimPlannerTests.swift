@@ -55,7 +55,98 @@ struct ReclaimPlannerTests {
         let plan = planner.plan(from: ScanReport(scannedRoots: [], placements: [placement]))
         #expect(plan.ingests.count == 1)
         #expect(plan.replacements.isEmpty)
+        #expect(plan.pushes.isEmpty)
         #expect(plan.reclaimableBytes == 0)
+    }
+
+    @Test func missingBinGetsAPush() throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: "perch-push-\(UUID().uuidString)")
+        let dictus = root.appending(path: "Dictus/Models", directoryHint: .isDirectory)
+        let fluid = root.appending(path: "FluidVoice/Models", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: dictus, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: fluid, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let package = dictus.appending(path: "parakeet-tdt-0.6b-v3-coreml")
+        try FileManager.default.createDirectory(at: package, withIntermediateDirectories: true)
+        try Data(repeating: 1, count: 32).write(to: package.appending(path: "weights.bin"))
+
+        let fingerprint = Fingerprint(hex: String(repeating: "44", count: 32))
+        let catalog = Catalog(
+            version: 0,
+            apps: [
+                CatalogApp(
+                    id: "fluidvoice",
+                    name: "FluidVoice",
+                    kind: .app,
+                    roots: [fluid.path]
+                ),
+            ]
+        )
+        let planner = ReclaimPlanner(
+            store: PackageStore(paths: PerchPaths(home: root.appending(path: "perch"))),
+            catalog: catalog,
+            expander: PathExpander(
+                home: root,
+                containersRoot: root.appending(path: "Containers")
+            )
+        )
+        let placement = Placement(
+            url: package,
+            fingerprint: fingerprint,
+            logicalBytes: 32,
+            source: .app(id: "dictus", name: "Dictus"),
+            kind: .stt,
+            displayName: "parakeet-tdt-0.6b-v3-coreml"
+        )
+        let plan = planner.plan(from: ScanReport(scannedRoots: [dictus], placements: [placement]))
+        #expect(plan.pushes.count == 1)
+        #expect(plan.pushes[0].destination.lastPathComponent == "parakeet-tdt-0.6b-v3-coreml")
+        #expect(plan.pushes[0].destination.deletingLastPathComponent().path == fluid.path)
+    }
+
+    @Test func existingDestinationIsNotPushed() throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: "perch-push-skip-\(UUID().uuidString)")
+        let dictus = root.appending(path: "Dictus/Models", directoryHint: .isDirectory)
+        let fluid = root.appending(path: "FluidVoice/Models", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: dictus, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: fluid, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let name = "parakeet-tdt-0.6b-v3-coreml"
+        try FileManager.default.createDirectory(at: dictus.appending(path: name), withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: fluid.appending(path: name), withIntermediateDirectories: true)
+
+        let fingerprint = Fingerprint(hex: String(repeating: "55", count: 32))
+        let other = Fingerprint(hex: String(repeating: "66", count: 32))
+        let planner = ReclaimPlanner(
+            store: PackageStore(paths: PerchPaths(home: root.appending(path: "perch"))),
+            catalog: Catalog(
+                version: 0,
+                apps: [CatalogApp(id: "fluidvoice", name: "FluidVoice", kind: .app, roots: [fluid.path])]
+            ),
+            expander: PathExpander(home: root, containersRoot: root.appending(path: "Containers"))
+        )
+        let placements = [
+            Placement(
+                url: dictus.appending(path: name),
+                fingerprint: fingerprint,
+                logicalBytes: 10,
+                source: .app(id: "dictus", name: "Dictus"),
+                kind: .stt,
+                displayName: name
+            ),
+            Placement(
+                url: fluid.appending(path: name),
+                fingerprint: other,
+                logicalBytes: 10,
+                source: .app(id: "fluidvoice", name: "FluidVoice"),
+                kind: .stt,
+                displayName: name
+            ),
+        ]
+        let plan = planner.plan(from: ScanReport(scannedRoots: [], placements: placements))
+        #expect(plan.pushes.isEmpty)
     }
 
     @Test func storeCopiesAreNotReplaced() throws {

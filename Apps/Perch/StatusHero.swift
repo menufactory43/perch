@@ -16,6 +16,18 @@ struct StatusHero: View {
                     )
                 Text("can be reclaimed")
                     .foregroundStyle(.secondary)
+                if controller.pushCount > 0 {
+                    Text("\(controller.pushCount) apps can use a model you already have.")
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            } else if controller.pushCount > 0 {
+                Text("\(controller.pushCount) apps to fill")
+                    .font(.title2)
+                    .bold()
+                Text("These apps don’t have a model that is already on this Mac. Perch will clone it into their folder so they don’t download it again.")
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             } else if (controller.report?.placements.isEmpty ?? true) && !controller.isScanning {
                 Text("No speech models yet")
                     .font(.title2)
@@ -33,12 +45,17 @@ struct StatusHero: View {
             }
 
             HStack {
-                Button("Reclaim Space", action: controller.requestReclaim)
+                Button(controller.primaryActionTitle, action: controller.requestReclaim)
                     .buttonStyle(.borderedProminent)
                     .disabled(!controller.canReclaim)
                     .keyboardShortcut(.defaultAction)
                 Button("Scan Again", action: controller.scan)
                     .disabled(controller.isScanning)
+            }
+            if controller.watchEnabled {
+                Label("Watching — new downloads and empty apps are filled automatically.", systemImage: "eye")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
         .accessibilityElement(children: .combine)
