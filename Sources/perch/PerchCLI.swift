@@ -1,0 +1,127 @@
+import Foundation
+import PerchCore
+
+@main
+struct PerchCLI {
+    static func main() async {
+        let args = Array(CommandLine.arguments.dropFirst())
+        do {
+            try await run(args)
+        } catch {
+            fputs("perch: \(error.localizedDescription)\n", stderr)
+            Foundation.exit(1)
+        }
+    }
+
+    private static func run(_ args: [String]) async throws {
+        switch args.first {
+        case nil, "help", "-h", "--help":
+            print(usage)
+        case "version", "-v", "--version":
+            print("perch 1.0.0")
+        case "path":
+            print(PerchPaths.resolve().home.path)
+        case "scan":
+            try scan()
+        case "status":
+            try status()
+        case "reclaim":
+            let dryRun = args.contains("--dry-run")
+            try reclaim(dryRun: dryRun)
+        case "resolve":
+            guard let token = args.dropFirst().first else {
+                throw CLIError.message("usage: perch resolve <fingerprint>")
+            }
+            try resolve(token)
+        default:
+            throw CLIError.message("unknown command \(args[0])\n\n\(usage)")
+        }
+    }
+
+    private static func session() throws -> PerchSession {
+        try PerchSession()
+    }
+
+    private static func scan() throws {
+        let session = try session()
+        let report = try session.scan { root in
+            fputs("scanning \(root)\n", stderr)
+        }
+        printReport(report, plan: session.plan(from: report))
+    }
+
+    private static func status() throws {
+        let session = try session()
+        let report = try session.scan()
+        printReport(report, plan: session.plan(from: report))
+        print("store: \(session.paths.storeRoot.path)")
+        print("full-disk-access: \(FullDiskAccess.isGranted() ? "yes" : "no")")
+    }
+
+    private static func reclaim(dryRun: Bool) throws {
+        let session = try session()
+        let report = try session.scan()
+        let plan = session.plan(from: report)
+        if plan.replacements.isEmpty {
+            print("Nothing to reclaim. \(report.uniquePackageCount) unique packages already stored once.")
+            return
+        }
+        print("Would reclaim \(ByteFormatting.string(plan.reclaimableBytes)) across \(plan.replacements.count) copies.")
+        if dryRun {
+            for item in plan.replacements {
+                print("  clone → \(item.destination.path)")
+            }
+            return
+        }
+        let result = try session.reclaim(plan)
+        print("Cloned \(result.cloned), copied \(result.copied), reclaimed \(ByteFormatting.string(result.reclaimedBytes)).")
+        for failure in result.failed {
+            fputs("  warning: \(failure)\n", stderr)
+        }
+    }
+
+    private static func resolve(_ token: String) throws {
+        let session = try session()
+        guard let fingerprint = Fingerprint(rawValue: token) else {
+            throw CLIError.message("not a SHA-256 fingerprint")
+        }
+        let url = session.store.url(for: fingerprint)
+        guard session.store.contains(fingerprint) else {
+            throw CLIError.message("not in store: \(url.path)")
+        }
+        print(url.path)
+    }
+
+    private static func printReport(_ report: ScanReport, plan: ReclaimPlan) {
+        print("packages: \(report.placements.count) copies, \(report.uniquePackageCount) unique")
+        print("logical:  \(ByteFormatting.string(report.totalLogicalBytes))")
+        print("reclaimable: \(ByteFormatting.string(plan.reclaimableBytes))")
+        for (fingerprint, group) in report.groups.sorted(by: { $0.value[0].displayName < $1.value[0].displayName }) {
+            let name = group[0].displayName
+            let apps = group.map(\.source.displayName).joined(separator: ", ")
+            print("  \(name)  \(ByteFormatting.string(group[0].logicalBytes))  ×\(group.count)  \(fingerprint.rawValue.prefix(12))  [\(apps)]")
+        }
+    }
+
+    private static let usage = """
+        perch — shared store for local speech models
+
+        Usage:
+          perch status              Scan and show reclaimable space
+          perch scan                Same as status, with progress on stderr
+          perch reclaim             Replace duplicate copies with APFS clones
+          perch reclaim --dry-run   Show the plan only
+          perch resolve <sha256>    Print the canonical package path
+          perch path                Print PERCH_HOME
+          perch help
+        """
+}
+
+enum CLIError: Error, LocalizedError {
+    case message(String)
+    var errorDescription: String? {
+        switch self {
+        case .message(let text): text
+        }
+    }
+}

@@ -1,0 +1,144 @@
+{
+  "version": 1,
+  "apps": [
+    {
+      "id": "fluidaudio",
+      "name": "FluidAudio",
+      "kind": "library",
+      "bundleIds": [],
+      "roots": [
+        "~/Library/Application Support/FluidAudio/Models"
+      ],
+      "containerRoots": [
+        "Library/Application Support/FluidAudio/Models"
+      ],
+      "huggingfaceGlobs": [
+        "models--FluidInference--*"
+      ]
+    },
+    {
+      "id": "fluidvoice",
+      "name": "FluidVoice",
+      "kind": "app",
+      "bundleIds": [
+        "dev.altic.FluidVoice",
+        "com.altic.FluidVoice",
+        "altic.FluidVoice"
+      ],
+      "roots": [],
+      "containerRoots": [
+        "Library/Application Support/FluidAudio/Models"
+      ],
+      "huggingfaceGlobs": []
+    },
+    {
+      "id": "dictus",
+      "name": "Dictus",
+      "kind": "app",
+      "bundleIds": [
+        "com.getdictus.dictus",
+        "app.dictus.macos",
+        "com.dictus.app"
+      ],
+      "roots": [],
+      "containerRoots": [
+        "Library/Application Support/FluidAudio/Models",
+        "Library/Application Support/Dictus"
+      ],
+      "huggingfaceGlobs": []
+    },
+    {
+      "id": "macparakeet",
+      "name": "MacParakeet",
+      "kind": "app",
+      "bundleIds": [
+        "com.moona3k.macparakeet"
+      ],
+      "roots": [
+        "~/Library/Application Support/MacParakeet"
+      ],
+      "containerRoots": [
+        "Library/Application Support/MacParakeet",
+        "Library/Application Support/FluidAudio/Models"
+      ],
+      "huggingfaceGlobs": []
+    },
+    {
+      "id": "whisperkit",
+      "name": "WhisperKit",
+      "kind": "library",
+      "bundleIds": [],
+      "roots": [
+        "~/Library/Application Support/WhisperKit",
+        "~/Library/Caches/argmaxinc.whisperkit"
+      ],
+      "containerRoots": [
+        "Library/Application Support/WhisperKit",
+        "Library/Caches/argmaxinc.whisperkit"
+      ],
+      "huggingfaceGlobs": [
+        "models--argmaxinc--*"
+      ]
+    },
+    {
+      "id": "huggingface",
+      "name": "Hugging Face",
+      "kind": "cache",
+      "bundleIds": [],
+      "roots": [],
+      "containerRoots": [],
+      "huggingfaceGlobs": [
+        "models--*parakeet*",
+        "models--*whisper*",
+        "models--*kokoro*",
+        "models--*piper*",
+        "models--FluidInference--*",
+        "models--hexgrad--Kokoro*"
+      ]
+    },
+    {
+      "id": "mlx",
+      "name": "MLX",
+      "kind": "cache",
+      "bundleIds": [],
+      "roots": [
+        "~/Library/Caches/mlx"
+      ],
+      "containerRoots": [],
+      "huggingfaceGlobs": [
+        "models--mlx-community--parakeet*",
+        "models--mlx-community--whisper*",
+        "models--mlx-community--kokoro*"
+      ]
+    },
+    {
+      "id": "macwhisper",
+      "name": "MacWhisper",
+      "kind": "app",
+      "bundleIds": [
+        "com.goodsnooze.MacWhisper"
+      ],
+      "roots": [
+        "~/Library/Application Support/MacWhisper"
+      ],
+      "containerRoots": [
+        "Library/Application Support/MacWhisper"
+      ],
+      "huggingfaceGlobs": []
+    },
+    {
+      "id": "superwhisper",
+      "name": "SuperWhisper",
+      "kind": "app",
+      "bundleIds": [
+        "com.superduper.superwhisper"
+      ],
+      "roots": [],
+      "containerRoots": [
+        "Library/Application Support/superwhisper",
+        "Library/Application Support/SuperWhisper"
+      ],
+      "huggingfaceGlobs": []
+    }
+  ]
+}
