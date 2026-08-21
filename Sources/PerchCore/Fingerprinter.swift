@@ -41,16 +41,12 @@ public struct Fingerprinter: @unchecked Sendable {
         return (Fingerprint(hex: hex(hasher.finalize())), total)
     }
 
-    /// Path of `file` relative to `root`.
-    ///
-    /// `String.replacing` strips *every* occurrence of the root rather than the
-    /// leading one. It takes a contrived tree to diverge (the whole absolute
-    /// root has to reappear inside a child path), so this is hardening, not a
-    /// live bug — but dropping the prefix says what we mean and costs nothing.
+    /// Leading path of `file` under `root`; requires a directory separator so
+    /// `/tmp/Models` does not swallow `/tmp/ModelsBackup`.
     static func relativePath(of file: URL, under root: URL) -> String {
         let rootPath = root.standardizedFileURL.path
         let filePath = file.standardizedFileURL.path
-        guard filePath.hasPrefix(rootPath) else { return filePath }
+        guard filePath == rootPath || filePath.hasPrefix(rootPath + "/") else { return filePath }
         return String(filePath.dropFirst(rootPath.count)).trimmingPrefix("/").description
     }
 

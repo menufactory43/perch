@@ -15,7 +15,6 @@ cask "perch" do
   depends_on macos: ">= :sonoma"
 
   app "Perch.app"
-  binary "#{appdir}/Perch.app/Contents/Helpers/perch"
 
   zap trash: [
     "~/Library/Application Support/Perch",

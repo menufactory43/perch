@@ -40,13 +40,7 @@ xcodebuild \
 
 test -d "${APP}"
 
-# Ship the `perch` CLI inside the bundle so the Homebrew cask can symlink it
-# into PATH. Without this every CLI example in the README is unreachable for
-# anyone who installed the cask or the DMG.
-#
-# Contents/Helpers, NOT Contents/MacOS: the volume is case-insensitive by
-# default, so a CLI named `perch` next to the `Perch` executable overwrites the
-# app itself and the bundle no longer launches.
+# Contents/Helpers, not Contents/MacOS: a case-insensitive volume would collide with Perch.
 swift build -c release --product perch --arch arm64 --arch x86_64
 mkdir -p "${APP}/Contents/Helpers"
 cp "$(swift build -c release --product perch --arch arm64 --arch x86_64 --show-bin-path)/perch" \

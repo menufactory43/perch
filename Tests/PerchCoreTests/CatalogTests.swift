@@ -13,11 +13,20 @@ struct CatalogTests {
 
     @Test func catalogCoversBundleIdModelFolders() throws {
         let catalog = try CatalogLoader.bundled()
-        for id in ["parler", "handy", "meetily"] {
-            #expect(catalog.apps.contains { $0.id == id })
+        let bundleRoots = [
+            "parler": "com.melvynx.parler",
+            "handy": "com.pais.handy",
+            "meetily": "com.meetily.ai",
+        ]
+        for (id, bundle) in bundleRoots {
+            let app = catalog.apps.first { $0.id == id }
+            #expect(app?.roots.contains("~/Library/Application Support/\(bundle)/models") == true)
+            #expect(app?.containerRoots.contains("Library/Application Support/\(bundle)/models") == true)
         }
         let dictus = catalog.apps.first { $0.id == "dictus" }
         #expect(dictus?.bundleIds.contains("com.dictus.desktop") == true)
+        #expect(dictus?.roots.contains("~/Library/Application Support/com.dictus.desktop/models") == true)
+        #expect(dictus?.containerRoots.contains("Library/Application Support/com.dictus.desktop/models") == true)
     }
 
     @Test func expanderResolvesHome() {

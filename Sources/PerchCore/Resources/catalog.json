@@ -46,7 +46,8 @@
       ],
       "containerRoots": [
         "Library/Application Support/FluidAudio/Models",
-        "Library/Application Support/Dictus"
+        "Library/Application Support/Dictus",
+        "Library/Application Support/com.dictus.desktop/models"
       ],
       "huggingfaceGlobs": []
     },

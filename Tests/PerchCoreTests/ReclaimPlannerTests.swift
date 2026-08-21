@@ -222,4 +222,43 @@ struct ReclaimPlannerTests {
         )
         #expect(plan.pushes.isEmpty)
     }
+
+    @Test func emptyFluidAudioBinDoesNotReceiveAnLLM() throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: "perch-nofill-fa-\(UUID().uuidString)")
+        let cotypist = root.appending(path: "Cotypist/Models", directoryHint: .isDirectory)
+        let fluid = root.appending(path: "Library/Application Support/FluidAudio/Models", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: cotypist, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: fluid, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let gguf = cotypist.appending(path: "gemma.gguf")
+        try Data(repeating: 1, count: 32).write(to: gguf)
+        let fingerprint = Fingerprint(hex: String(repeating: "99", count: 32))
+        let planner = ReclaimPlanner(
+            store: PackageStore(paths: PerchPaths(home: root.appending(path: "perch"))),
+            catalog: Catalog(
+                version: 0,
+                apps: [
+                    CatalogApp(id: "fluidaudio", name: "FluidAudio", kind: .library, roots: [fluid.path]),
+                ]
+            ),
+            expander: PathExpander(home: root, containersRoot: root.appending(path: "Containers"))
+        )
+        let plan = planner.plan(
+            from: ScanReport(
+                scannedRoots: [cotypist, fluid],
+                placements: [
+                    Placement(
+                        url: gguf,
+                        fingerprint: fingerprint,
+                        logicalBytes: 32,
+                        source: .app(id: "cotypist", name: "Cotypist"),
+                        kind: .llm,
+                        displayName: "gemma.gguf"
+                    ),
+                ]
+            )
+        )
+        #expect(plan.pushes.isEmpty)
+    }
 }

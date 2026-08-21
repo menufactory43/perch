@@ -23,13 +23,13 @@ public enum BlockSharing {
         return shareFile(left, right)
     }
 
-    /// A tree counts as shared only when every file in it shares blocks.
-    ///
-    /// Probing just the largest file reported "already shared" for a tree whose
-    /// big weights were cloned but whose smaller siblings were not, so the rest
-    /// never got reclaimed. The check is stat + fcntl per file, which is noise
-    /// next to the SHA-256 the scan already paid for.
+    /// Every visible file must share; empty subdirs (or `.DS_Store`-only) do not count.
     private static func shareDirectory(_ a: URL, _ b: URL, fileManager: FileManager) -> Bool {
+        let (sawFile, shared) = compareTree(a, b, fileManager: fileManager)
+        return sawFile && shared
+    }
+
+    private static func compareTree(_ a: URL, _ b: URL, fileManager: FileManager) -> (sawFile: Bool, shared: Bool) {
         let children = (try? fileManager.contentsOfDirectory(at: a, includingPropertiesForKeys: [.isRegularFileKey, .isDirectoryKey], options: [.skipsHiddenFiles])) ?? []
         var sawFile = false
 
@@ -37,15 +37,16 @@ public enum BlockSharing {
             let isDirectory = (try? child.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
             let counterpart = b.appending(path: child.lastPathComponent)
             if isDirectory {
-                guard shareDirectory(child, counterpart, fileManager: fileManager) else { return false }
-                sawFile = true
+                let nested = compareTree(child, counterpart, fileManager: fileManager)
+                if !nested.shared { return (true, false) }
+                sawFile = sawFile || nested.sawFile
                 continue
             }
-            guard shareFile(child, counterpart) else { return false }
             sawFile = true
+            if !shareFile(child, counterpart) { return (true, false) }
         }
 
-        return sawFile
+        return (sawFile, true)
     }
 
     private static func shareFile(_ a: URL, _ b: URL) -> Bool {
@@ -68,11 +69,5 @@ public enum BlockSharing {
         let status = fcntl(fd, F_LOG2PHYS, &info)
         guard status == 0 else { return nil }
         return info.l2p_devoffset
-    }
-}
-
-private extension URL {
-    var fileSize: Int {
-        (try? resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
     }
 }
