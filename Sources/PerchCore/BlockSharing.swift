@@ -23,16 +23,29 @@ public enum BlockSharing {
         return shareFile(left, right)
     }
 
+    /// A tree counts as shared only when every file in it shares blocks.
+    ///
+    /// Probing just the largest file reported "already shared" for a tree whose
+    /// big weights were cloned but whose smaller siblings were not, so the rest
+    /// never got reclaimed. The check is stat + fcntl per file, which is noise
+    /// next to the SHA-256 the scan already paid for.
     private static func shareDirectory(_ a: URL, _ b: URL, fileManager: FileManager) -> Bool {
         let children = (try? fileManager.contentsOfDirectory(at: a, includingPropertiesForKeys: [.isRegularFileKey, .isDirectoryKey], options: [.skipsHiddenFiles])) ?? []
-        let files = children.filter { url in
-            (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) != true
+        var sawFile = false
+
+        for child in children {
+            let isDirectory = (try? child.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
+            let counterpart = b.appending(path: child.lastPathComponent)
+            if isDirectory {
+                guard shareDirectory(child, counterpart, fileManager: fileManager) else { return false }
+                sawFile = true
+                continue
+            }
+            guard shareFile(child, counterpart) else { return false }
+            sawFile = true
         }
-        guard let probe = files.max(by: { ($0.fileSize) < ($1.fileSize) }) else {
-            return false
-        }
-        let counterpart = b.appending(path: probe.lastPathComponent)
-        return shareFile(probe, counterpart)
+
+        return sawFile
     }
 
     private static func shareFile(_ a: URL, _ b: URL) -> Bool {
