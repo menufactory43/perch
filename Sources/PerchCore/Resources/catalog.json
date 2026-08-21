@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "apps": [
     {
       "id": "fluidaudio",
@@ -38,12 +38,16 @@
       "bundleIds": [
         "com.getdictus.dictus",
         "app.dictus.macos",
-        "com.dictus.app"
+        "com.dictus.app",
+        "com.dictus.desktop"
       ],
-      "roots": [],
+      "roots": [
+        "~/Library/Application Support/com.dictus.desktop/models"
+      ],
       "containerRoots": [
         "Library/Application Support/FluidAudio/Models",
-        "Library/Application Support/Dictus"
+        "Library/Application Support/Dictus",
+        "Library/Application Support/com.dictus.desktop/models"
       ],
       "huggingfaceGlobs": []
     },
@@ -246,6 +250,51 @@
         "~/Library/Application Support/Cotabby/LlamaRuntime"
       ],
       "containerRoots": [],
+      "huggingfaceGlobs": []
+    },
+    {
+      "id": "parler",
+      "name": "Parler",
+      "kind": "app",
+      "bundleIds": [
+        "com.melvynx.parler"
+      ],
+      "roots": [
+        "~/Library/Application Support/com.melvynx.parler/models"
+      ],
+      "containerRoots": [
+        "Library/Application Support/com.melvynx.parler/models"
+      ],
+      "huggingfaceGlobs": []
+    },
+    {
+      "id": "handy",
+      "name": "Handy",
+      "kind": "app",
+      "bundleIds": [
+        "com.pais.handy"
+      ],
+      "roots": [
+        "~/Library/Application Support/com.pais.handy/models"
+      ],
+      "containerRoots": [
+        "Library/Application Support/com.pais.handy/models"
+      ],
+      "huggingfaceGlobs": []
+    },
+    {
+      "id": "meetily",
+      "name": "Meetily",
+      "kind": "app",
+      "bundleIds": [
+        "com.meetily.ai"
+      ],
+      "roots": [
+        "~/Library/Application Support/com.meetily.ai/models"
+      ],
+      "containerRoots": [
+        "Library/Application Support/com.meetily.ai/models"
+      ],
       "huggingfaceGlobs": []
     }
   ]

@@ -44,4 +44,12 @@ struct FingerprintTests {
         let after = try fingerprinter.fingerprint(at: dir)
         #expect(before.0 != after.0)
     }
+
+    @Test func relativePathStripsOnlyTheLeadingRoot() {
+        let root = URL(fileURLWithPath: "/tmp/Models")
+        let nested = URL(fileURLWithPath: "/tmp/Models/tmp/Models/weights.onnx")
+        #expect(Fingerprinter.relativePath(of: nested, under: root) == "tmp/Models/weights.onnx")
+        let neighbor = URL(fileURLWithPath: "/tmp/ModelsBackup/weights.onnx")
+        #expect(Fingerprinter.relativePath(of: neighbor, under: root) == "/tmp/ModelsBackup/weights.onnx")
+    }
 }

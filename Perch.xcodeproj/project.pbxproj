@@ -39,7 +39,6 @@
 		44EA0F30DFCBB10581D96FCF /* ModelTotals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTotals.swift; sourceTree = "<group>"; };
 		4B490B6EBAA011C224A8E1C3 /* PackageGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageGroup.swift; sourceTree = "<group>"; };
 		4C777D622C0B5C077AAA9CF9 /* Perch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Perch.entitlements; sourceTree = "<group>"; };
-		5C47DAB7FBCA945D66BC21AD /* sttprotocol */ = {isa = PBXFileReference; lastKnownFileType = folder; name = sttprotocol; path = .; sourceTree = SOURCE_ROOT; };
 		60091EF2E23D3FADA830362B /* PackageList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageList.swift; sourceTree = "<group>"; };
 		60A955E7FABFC9446F1777AE /* PermissionPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionPane.swift; sourceTree = "<group>"; };
 		6AF74CC4132D5B1AB6301918 /* StatusHero.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusHero.swift; sourceTree = "<group>"; };
@@ -48,6 +47,7 @@
 		928275AF3C958B3B0CFD6035 /* StatusPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusPane.swift; sourceTree = "<group>"; };
 		A172110ACADAA68F2399C529 /* PackageRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageRow.swift; sourceTree = "<group>"; };
 		A642AB4634128434F1D188E0 /* FooterBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FooterBar.swift; sourceTree = "<group>"; };
+		5C47DAB7FBCA945D66BC21AD /* sttprotocol */ = {isa = PBXFileReference; lastKnownFileType = folder; name = sttprotocol; path = .; sourceTree = SOURCE_ROOT; };
 		BD2A62F2DB36BBED2E62FDEB /* Perch-Info.generated.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Perch-Info.generated.plist"; sourceTree = "<group>"; };
 		D41D4D3B908363F711572982 /* Perch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Perch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D7F0E975E7B5DF5119C9B807 /* FolderWatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderWatch.swift; sourceTree = "<group>"; };

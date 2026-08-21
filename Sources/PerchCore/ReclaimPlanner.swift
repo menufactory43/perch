@@ -90,6 +90,8 @@ public struct ReclaimPlanner: @unchecked Sendable {
                 }
                 let kinds = kindsInBin[binPath, default: []]
                 if kinds.isEmpty {
+                    // Empty FluidAudio bins only accept speech kinds — "Models" is too loose.
+                    guard Self.speechKinds.contains(canonical.kind) else { continue }
                     let sourceFolder = canonical.url.deletingLastPathComponent().lastPathComponent
                     guard bin.lastPathComponent == sourceFolder else { continue }
                 } else if !kinds.contains(canonical.kind) {
@@ -137,6 +139,9 @@ public struct ReclaimPlanner: @unchecked Sendable {
 
         return bins.map { URL(fileURLWithPath: $0, isDirectory: true) }
     }
+
+    /// FluidAudio bins: stt/tts/vad/diarization, never .llm.
+    static let speechKinds: Set<ModelKind> = [.stt, .tts, .vad, .diarization]
 
     private func isPushableBin(_ url: URL) -> Bool {
         let path = url.path

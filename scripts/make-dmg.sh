@@ -40,6 +40,13 @@ xcodebuild \
 
 test -d "${APP}"
 
+# Contents/Helpers, not Contents/MacOS: a case-insensitive volume would collide with Perch.
+swift build -c release --product perch --arch arm64 --arch x86_64
+mkdir -p "${APP}/Contents/Helpers"
+cp "$(swift build -c release --product perch --arch arm64 --arch x86_64 --show-bin-path)/perch" \
+  "${APP}/Contents/Helpers/perch"
+codesign --force --options runtime --timestamp --sign "${SIGN_ID}" "${APP}/Contents/Helpers/perch"
+
 codesign --force --deep --options runtime --timestamp --sign "${SIGN_ID}" "${APP}"
 codesign --verify --deep --strict "${APP}"
 

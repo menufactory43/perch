@@ -23,16 +23,30 @@ public enum BlockSharing {
         return shareFile(left, right)
     }
 
+    /// Every visible file must share; empty subdirs (or `.DS_Store`-only) do not count.
     private static func shareDirectory(_ a: URL, _ b: URL, fileManager: FileManager) -> Bool {
+        let (sawFile, shared) = compareTree(a, b, fileManager: fileManager)
+        return sawFile && shared
+    }
+
+    private static func compareTree(_ a: URL, _ b: URL, fileManager: FileManager) -> (sawFile: Bool, shared: Bool) {
         let children = (try? fileManager.contentsOfDirectory(at: a, includingPropertiesForKeys: [.isRegularFileKey, .isDirectoryKey], options: [.skipsHiddenFiles])) ?? []
-        let files = children.filter { url in
-            (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) != true
+        var sawFile = false
+
+        for child in children {
+            let isDirectory = (try? child.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
+            let counterpart = b.appending(path: child.lastPathComponent)
+            if isDirectory {
+                let nested = compareTree(child, counterpart, fileManager: fileManager)
+                if !nested.shared { return (true, false) }
+                sawFile = sawFile || nested.sawFile
+                continue
+            }
+            sawFile = true
+            if !shareFile(child, counterpart) { return (true, false) }
         }
-        guard let probe = files.max(by: { ($0.fileSize) < ($1.fileSize) }) else {
-            return false
-        }
-        let counterpart = b.appending(path: probe.lastPathComponent)
-        return shareFile(probe, counterpart)
+
+        return (sawFile, true)
     }
 
     private static func shareFile(_ a: URL, _ b: URL) -> Bool {
@@ -55,11 +69,5 @@ public enum BlockSharing {
         let status = fcntl(fd, F_LOG2PHYS, &info)
         guard status == 0 else { return nil }
         return info.l2p_devoffset
-    }
-}
-
-private extension URL {
-    var fileSize: Int {
-        (try? resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
     }
 }

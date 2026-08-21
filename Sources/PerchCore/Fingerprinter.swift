@@ -31,7 +31,7 @@ public struct Fingerprinter: @unchecked Sendable {
         var hasher = SHA256()
         var total: Int64 = 0
         for file in files {
-            let relative = file.path.replacing(url.path, with: "").trimmingPrefix("/")
+            let relative = Self.relativePath(of: file, under: url)
             let digest = try hashFile(file)
             let size = try fileSize(file)
             total += size
@@ -39,6 +39,15 @@ public struct Fingerprinter: @unchecked Sendable {
             hasher.update(data: Data(line.utf8))
         }
         return (Fingerprint(hex: hex(hasher.finalize())), total)
+    }
+
+    /// Leading path of `file` under `root`; requires a directory separator so
+    /// `/tmp/Models` does not swallow `/tmp/ModelsBackup`.
+    static func relativePath(of file: URL, under root: URL) -> String {
+        let rootPath = root.standardizedFileURL.path
+        let filePath = file.standardizedFileURL.path
+        guard filePath == rootPath || filePath.hasPrefix(rootPath + "/") else { return filePath }
+        return String(filePath.dropFirst(rootPath.count)).trimmingPrefix("/").description
     }
 
     private func collectFiles(in directory: URL) throws -> [URL] {
