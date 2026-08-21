@@ -90,6 +90,13 @@ public struct ReclaimPlanner: @unchecked Sendable {
                 }
                 let kinds = kindsInBin[binPath, default: []]
                 if kinds.isEmpty {
+                    // Empty bin: nothing on disk tells us what it wants. The
+                    // folder-name match alone is far too loose — any .gguf under
+                    // a folder called "Models" matched "FluidAudio/Models" and we
+                    // offered to push a 3.5 GB Gemma into a speech-model folder.
+                    // Bins are FluidAudio-only (see isPushableBin), so restrict
+                    // the guess to kinds FluidAudio actually loads.
+                    guard Self.speechKinds.contains(canonical.kind) else { continue }
                     let sourceFolder = canonical.url.deletingLastPathComponent().lastPathComponent
                     guard bin.lastPathComponent == sourceFolder else { continue }
                 } else if !kinds.contains(canonical.kind) {
@@ -137,6 +144,9 @@ public struct ReclaimPlanner: @unchecked Sendable {
 
         return bins.map { URL(fileURLWithPath: $0, isDirectory: true) }
     }
+
+    /// Kinds a FluidAudio model folder can legitimately hold. Never .llm.
+    static let speechKinds: Set<ModelKind> = [.stt, .tts, .vad, .diarization]
 
     private func isPushableBin(_ url: URL) -> Bool {
         let path = url.path
